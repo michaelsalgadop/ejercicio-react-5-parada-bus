@@ -1,0 +1,108 @@
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  background-color: rgb(38, 50, 56);
+  color: #fff;
+}
+.display {
+  font-family: bpdotsregular;
+  background-color: #000;
+  width: 350px;
+  color: orange;
+  height: 31px;
+  line-height: 30px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow: hidden;
+}
+.bus {
+  display: flex;
+  position: relative;
+}
+.linea {
+  width: 40px;
+}
+.destino {
+  flex-grow: 1;
+}
+.tiempo {
+  width: 77px;
+}
+.contenedor {
+  max-width: 800px;
+  margin: 0 auto;
+}
+.cabecera {
+  text-align: center;
+}
+.cabecera a {
+  color: inherit;
+}
+.display {
+  margin: 0 auto;
+}
+.forms {
+  text-align: center;
+  margin-top: 100px;
+}
+.forms form {
+  margin-bottom: 20px;
+}
+label {
+  margin-right: 10px;
+}
+input, select, button {
+  height: 30px;
+  line-height: 30px;
+  border: none;
+}
+input {
+  background: #fff;
+  margin-right: 10px;
+}
+select, button {
+  background-color: rgb(107, 189, 91);
+  color: #fff;
+}
+.grafico-paradas {
+  list-style: none;
+  margin-top: 40px;
+}
+.grafico-paradas .parada {
+  margin-bottom: 10px;
+  position: relative;
+}
+.grafico-paradas .parada:before {
+  content: "";
+  width: 16px;
+  height: 16px;
+  background-color: #fff;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 10px;
+  position: relative;
+  top: 2px;
+}
+.grafico-paradas .parada:after {
+  content: "";
+  border-left: 2px solid #fff;
+  height: 20px;
+  position: absolute;
+  left: 7px;
+  bottom: -15px;
+}
+.grafico-paradas .parada:last-child:after {
+  display: none;
+}
+.grafico-paradas .parada a {
+  color: inherit;
+}
+.bus a {
+  color: inherit;
+  text-decoration: none;
+}
