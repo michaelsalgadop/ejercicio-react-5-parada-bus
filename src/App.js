@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from "react";
-import { Cabecera } from "./componentes/Cabeceras/Cabecera_Parada/Cabecera";
-import { FormularioParada } from "./componentes/FormularioParada";
-import { FormularioTiempoLinea } from "./componentes/FormularioTiempoLinea";
+import { Cabecera } from "./componentes/Principal/Cabecera/Cabecera";
+import { FormularioParada } from "./componentes/Principal/FormularioParada";
+import { FormularioTiempoLinea } from "./componentes/Principal/FormularioTiempoLinea";
 import { ParadasContext } from "./contexts/ParadasContext";
 
 function App() {
