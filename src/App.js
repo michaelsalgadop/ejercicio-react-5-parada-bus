@@ -1,16 +1,74 @@
+import { useCallback, useMemo, useState } from "react";
 import { Cabecera } from "./componentes/Cabeceras/Cabecera_Parada/Cabecera";
 import { FormularioParada } from "./componentes/FormularioParada";
 import { FormularioTiempoLinea } from "./componentes/FormularioTiempoLinea";
+import { ParadasContext } from "./contexts/ParadasContext";
 
 function App() {
+  const urlParadas = "https://api.tmb.cat/v1/ibus/stops/";
+  const appId = "68b27c54";
+  const appKey = "ae7f8c10e50256baea7772a20d5124d3";
+  const [datosAPI, setDatosAPI] = useState({});
+  const [parada, setParada] = useState(null);
+  const [linea, setLinea] = useState(null);
+  const comprobacionDatosAPI = useCallback(
+    () =>
+      datosAPI?.status &&
+      datosAPI.status === "success" &&
+      datosAPI.data?.ibus?.length > 0,
+    [datosAPI]
+  );
+  const minutosTiempoLinea = useMemo(() => {
+    let minutos = null;
+    if (comprobacionDatosAPI() && linea) {
+      const { "t-in-min": min } = datosAPI.data.ibus.find(
+        ({ line }) => line === linea
+      );
+      minutos = min;
+    }
+    return minutos;
+  }, [linea, datosAPI, comprobacionDatosAPI]);
+  const getParada = async (parada) => {
+    try {
+      const response = await fetch(
+        `${urlParadas}${parada}?app_id=${appId}&app_key=${appKey}`
+      );
+      if (!response.ok)
+        throw new Error(
+          "Error inesperado, no se han devuelto los datos esperados."
+        );
+      const datos = await response.json();
+      return datos;
+    } catch (error) {
+      console.error(error.message);
+      return null;
+    }
+  };
+  const buscarParada = async (paradaBuscar) => {
+    setLinea(null);
+    const datos = await getParada(paradaBuscar);
+    setParada(paradaBuscar);
+    if (!datos) return;
+    setDatosAPI(datos);
+  };
   return (
-    <div className="contenedor">
-      <Cabecera></Cabecera>
-      <section className="forms">
-        <FormularioParada></FormularioParada>
-        <FormularioTiempoLinea></FormularioTiempoLinea>
-      </section>
-      {/* <header className="cabecera">
+    <ParadasContext.Provider value={{ parada, linea }}>
+      <div className="contenedor">
+        <Cabecera
+          datosAPI={datosAPI}
+          comprobacionDatosAPI={comprobacionDatosAPI}
+          minutosTiempoLinea={minutosTiempoLinea}
+        ></Cabecera>
+        <section className="forms">
+          <FormularioParada buscarParada={buscarParada}></FormularioParada>
+          {comprobacionDatosAPI() && (
+            <FormularioTiempoLinea
+              datosAPI={datosAPI}
+              setLinea={setLinea}
+            ></FormularioTiempoLinea>
+          )}
+        </section>
+        {/* <header className="cabecera">
         <h1>Parada nº 15</h1>
         <div className="display">
           <div className="bus">
@@ -44,7 +102,7 @@ function App() {
           </select>
         </form>
       </section> */}
-      {/* <header className="cabecera">
+        {/* <header className="cabecera">
         <h2>Bus 109 - Hospital Clínic / Polígon Zona Franca</h2>
         <h3>Polígon Zona Franca -> Hospital Clínic</h3>
         <a href="#">Volver a la portada</a>
@@ -74,7 +132,8 @@ function App() {
           </li>
         </ul>
       </section> */}
-    </div>
+      </div>
+    </ParadasContext.Provider>
   );
 }
 
