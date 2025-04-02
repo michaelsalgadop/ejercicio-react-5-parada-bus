@@ -12,8 +12,11 @@ function App() {
   const [linea, setLinea] = useState(null);
 
   const [routes, setRoutes] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [stops, setStops] = useState(null);
+  const [stopTimes, setStopTimes] = useState(null);
+  const [trips, setTrips] = useState(null);
 
+  const [loading, setLoading] = useState(false);
   const { getDataGTFSReader } = useGTFSReader();
   const cargarDatos = async (nombreArchivo) => {
     try {
@@ -39,6 +42,10 @@ function App() {
       }));
   const getRutas = async (isMounted) => {
     setLoading(true);
+    if (routes) {
+      setLoading(false);
+      return;
+    }
     let rutas = await cargarDatos("routes.txt");
     if (isMounted && rutas.length > 0) setRoutes(obtenerDatosRutas(rutas));
     setLoading(false);
@@ -52,7 +59,14 @@ function App() {
   }, []);
   return (
     <ParadasContext.Provider
-      value={{ parada, linea, routes, loading, setLoading, cargarDatos }}
+      value={{
+        parada,
+        linea,
+        routes,
+        loading,
+        setLoading,
+        cargarDatos,
+      }}
     >
       <Router>
         <Routes>
@@ -61,7 +75,19 @@ function App() {
             path="/"
             element={<Principal setLinea={setLinea} setParada={setParada} />}
           ></Route>
-          <Route path="/linea/:linea" element={<Linea></Linea>}></Route>
+          <Route
+            path="/linea/:linea"
+            element={
+              <Linea
+                stops={stops}
+                setStops={setStops}
+                stopTimes={stopTimes}
+                setStopTimes={setStopTimes}
+                trips={trips}
+                setTrips={setTrips}
+              ></Linea>
+            }
+          ></Route>
           <Route path="*" element={<PageNotFound></PageNotFound>}></Route>
         </Routes>
       </Router>

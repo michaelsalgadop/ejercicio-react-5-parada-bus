@@ -8,8 +8,8 @@ export const Principal = (props) => {
   const { setLinea, setParada } = props;
   const { linea, loading } = useContext(ParadasContext);
   const urlParadas = "https://api.tmb.cat/v1/ibus/stops/";
-  const appId = "68b27c54";
-  const appKey = "ae7f8c10e50256baea7772a20d5124d3";
+  const appId = process.env.REACT_APP_APP_ID;
+  const appKey = process.env.REACT_APP_APP_KEY;
   const [datosAPI, setDatosAPI] = useState({});
   const comprobacionDatosAPI = useCallback(
     () =>

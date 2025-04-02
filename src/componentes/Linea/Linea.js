@@ -1,15 +1,14 @@
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { ParadasContext } from "../../contexts/ParadasContext";
 import { Loading } from "../Loading";
 
-export const Linea = () => {
+export const Linea = (props) => {
+  const { stops, setStops, stopTimes, setStopTimes, trips, setTrips } = props;
   const { linea } = useParams();
   const { cargarDatos, routes, loading, setLoading } =
     useContext(ParadasContext);
-  const [stops, setStops] = useState(null);
-  const [stopTimes, setStopTimes] = useState(null);
-  const [trips, setTrips] = useState(null);
+
   const [datosLinea, setDatosLinea] = useState({
     origen: "",
     destino: "",
@@ -63,9 +62,9 @@ export const Linea = () => {
     }
   };
   const getDatosViaje = (idRuta) =>
-    trips
-      .filter((t) => t.route_id === idRuta)
-      .reduce((acumulador, { service_id, trip_id, trip_headsign }) => {
+    trips.reduce(
+      (acumulador, { route_id, service_id, trip_id, trip_headsign }) => {
+        if (route_id !== idRuta) return acumulador; // Evitamos filtrar antes, descartamos en la reducción.
         if (!acumulador.servicio) {
           return {
             origen: trip_headsign,
@@ -86,7 +85,9 @@ export const Linea = () => {
         }
 
         return acumulador;
-      }, {});
+      },
+      {}
+    );
   const getDatosIdentificadoresParadas = (idViaje) =>
     stopTimes
       .filter(({ trip_id }) => idViaje && trip_id === idViaje)
@@ -168,9 +169,9 @@ export const Linea = () => {
             <h3>
               {datosLinea.destino} - {datosLinea.origen}
             </h3>
-            <a href="/" className="pointer">
+            <Link to="/" className="pointer">
               Volver a la portada
-            </a>
+            </Link>
           </header>
           <section>
             <ul className="grafico-paradas">
