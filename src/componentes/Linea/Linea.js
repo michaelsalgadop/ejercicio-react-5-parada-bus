@@ -1,28 +1,30 @@
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { ParadasContext } from "../../contexts/ParadasContext";
 import { Loading } from "../Loading";
 
-export const Linea = () => {
+export const Linea = (props) => {
+  const { stops, setStops, stopTimes, setStopTimes, trips, setTrips } = props;
   const { linea } = useParams();
   const { cargarDatos, routes, loading, setLoading } =
     useContext(ParadasContext);
-  const [stops, setStops] = useState(null);
-  const [stopTimes, setStopTimes] = useState(null);
-  const [trips, setTrips] = useState(null);
+
   const [datosLinea, setDatosLinea] = useState({
     origen: "",
     destino: "",
     paradas: [],
   });
-  const getIdRuta = () => {
+
+  const idRuta = useRef(null);
+
+  const getIdRuta = useCallback(() => {
     let ruta = null;
 
     ruta = routes.find(
       ({ parada }) => parada.toLowerCase() === linea.toLowerCase()
     );
     return ruta ? ruta.id : ruta;
-  };
+  }, [linea, routes]);
 
   const setDatos = async () => {
     try {
@@ -62,10 +64,10 @@ export const Linea = () => {
       console.error(`Ocurrio un error: ${error.message}`);
     }
   };
-  const getDatosViaje = (idRuta) =>
-    trips
-      .filter((t) => t.route_id === idRuta)
-      .reduce((acumulador, { service_id, trip_id, trip_headsign }) => {
+  const getDatosViaje = () =>
+    trips.reduce(
+      (acumulador, { route_id, service_id, trip_id, trip_headsign }) => {
+        if (route_id !== idRuta.current) return acumulador; // Evitamos filtrar antes, descartamos en la reducción.
         if (!acumulador.servicio) {
           return {
             origen: trip_headsign,
@@ -86,7 +88,9 @@ export const Linea = () => {
         }
 
         return acumulador;
-      }, {});
+      },
+      {}
+    );
   const getDatosIdentificadoresParadas = (idViaje) =>
     stopTimes
       .filter(({ trip_id }) => idViaje && trip_id === idViaje)
@@ -109,9 +113,8 @@ export const Linea = () => {
   const getDatosLinea = useCallback(() => {
     try {
       if (!stops || !trips || !stopTimes || !linea || !routes) return;
-      const idRuta = routes.length > 0 ? getIdRuta() : null;
-      if (!idRuta) return;
-      const datosViajes = getDatosViaje(idRuta);
+      if (!idRuta.current) return;
+      const datosViajes = getDatosViaje();
       if (!datosViajes?.viaje)
         throw new Error("No se han encontrado viajes de dicha linea!");
       const datosIdentificadoresParadas = getDatosIdentificadoresParadas(
@@ -141,8 +144,10 @@ export const Linea = () => {
   useEffect(() => {
     setLoading(true);
     if (!routes) return;
+    idRuta.current = routes && routes.length > 0 ? getIdRuta() : null;
     setDatos();
-  }, [routes]);
+  }, [routes, getIdRuta]);
+
   useEffect(() => {
     if (!stops || !stopTimes || !trips) return;
     const controller = new AbortController();
@@ -158,7 +163,7 @@ export const Linea = () => {
   return (
     <div className="contenedor">
       {loading ? (
-        <Loading />
+        <Loading infoShowLoading="Cargando datos sobre las lineas para encontrar la linea seleccionada..." />
       ) : (
         <>
           <header className="cabecera">
@@ -168,9 +173,9 @@ export const Linea = () => {
             <h3>
               {datosLinea.destino} - {datosLinea.origen}
             </h3>
-            <a href="/" className="pointer">
+            <Link to="/" className="pointer">
               Volver a la portada
-            </a>
+            </Link>
           </header>
           <section>
             <ul className="grafico-paradas">
