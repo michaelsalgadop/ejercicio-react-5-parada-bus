@@ -18,9 +18,9 @@ function App() {
 
   const [loading, setLoading] = useState(false);
   const { getDataGTFSReader } = useGTFSReader();
-  const cargarDatos = async (nombreArchivo) => {
+  const cargarDatos = async (nombreArchivo, key = null, value = null) => {
     try {
-      const datos = await getDataGTFSReader(nombreArchivo);
+      const datos = await getDataGTFSReader(nombreArchivo, key, value);
       if (datos.length === 0)
         throw new Error("No se ha podido obtener información del archivo");
       return datos;

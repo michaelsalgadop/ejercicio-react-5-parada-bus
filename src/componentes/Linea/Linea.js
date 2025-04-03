@@ -14,14 +14,17 @@ export const Linea = (props) => {
     destino: "",
     paradas: [],
   });
-  const getIdRuta = () => {
+
+  const idRuta = useRef(null);
+
+  const getIdRuta = useCallback(() => {
     let ruta = null;
 
     ruta = routes.find(
       ({ parada }) => parada.toLowerCase() === linea.toLowerCase()
     );
     return ruta ? ruta.id : ruta;
-  };
+  }, [linea, routes]);
 
   const setDatos = async () => {
     try {
@@ -35,13 +38,17 @@ export const Linea = (props) => {
        *
        * Hacemos lo siguiente:
        */
-      const [datosParadas, datosTiempoParadas, datosViajes] = await Promise.all(
-        [
-          cargarDatos("stops.txt"),
-          cargarDatos("stop_times.txt"),
-          cargarDatos("trips.txt"),
-        ]
+      const datosViajes =
+        routes.length > 0
+          ? await cargarDatos("trips.txt", "route_id", idRuta.current)
+          : await cargarDatos("trips.txt");
+      if (datosViajes.length === 0) return;
+      const datosTiempoParadas = await cargarDatos(
+        "stop_times.txt",
+        "trip_id",
+        datosViajes[0].trip_id
       );
+      const datosParadas = await cargarDatos("stops.txt");
       /**
        * Promise.all reduce el tiempo total de carga, permitiendo ejecutar las tres promesas en paralelo.
        */
@@ -61,10 +68,10 @@ export const Linea = (props) => {
       console.error(`Ocurrio un error: ${error.message}`);
     }
   };
-  const getDatosViaje = (idRuta) =>
+  const getDatosViaje = () =>
     trips.reduce(
       (acumulador, { route_id, service_id, trip_id, trip_headsign }) => {
-        if (route_id !== idRuta) return acumulador; // Evitamos filtrar antes, descartamos en la reducción.
+        if (route_id !== idRuta.current) return acumulador; // Evitamos filtrar antes, descartamos en la reducción.
         if (!acumulador.servicio) {
           return {
             origen: trip_headsign,
@@ -110,9 +117,8 @@ export const Linea = (props) => {
   const getDatosLinea = useCallback(() => {
     try {
       if (!stops || !trips || !stopTimes || !linea || !routes) return;
-      const idRuta = routes.length > 0 ? getIdRuta() : null;
-      if (!idRuta) return;
-      const datosViajes = getDatosViaje(idRuta);
+      if (!idRuta.current) return;
+      const datosViajes = getDatosViaje();
       if (!datosViajes?.viaje)
         throw new Error("No se han encontrado viajes de dicha linea!");
       const datosIdentificadoresParadas = getDatosIdentificadoresParadas(
@@ -142,8 +148,10 @@ export const Linea = (props) => {
   useEffect(() => {
     setLoading(true);
     if (!routes) return;
+    idRuta.current = routes && routes.length > 0 ? getIdRuta() : null;
     setDatos();
-  }, [routes]);
+  }, [routes, getIdRuta]);
+
   useEffect(() => {
     if (!stops || !stopTimes || !trips) return;
     const controller = new AbortController();
@@ -159,7 +167,7 @@ export const Linea = (props) => {
   return (
     <div className="contenedor">
       {loading ? (
-        <Loading />
+        <Loading infoShowLoading="Cargando datos sobre las lineas para encontrar la linea seleccionada..." />
       ) : (
         <>
           <header className="cabecera">

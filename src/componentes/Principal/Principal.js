@@ -54,7 +54,7 @@ export const Principal = (props) => {
   return (
     <div className="contenedor">
       {loading ? (
-        <Loading />
+        <Loading infoShowLoading="Cargando y obteniendo datos sobre las rutas disponibles..." />
       ) : (
         <>
           <Cabecera
