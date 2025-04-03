@@ -38,17 +38,13 @@ export const Linea = (props) => {
        *
        * Hacemos lo siguiente:
        */
-      const datosViajes =
-        routes.length > 0
-          ? await cargarDatos("trips.txt", "route_id", idRuta.current)
-          : await cargarDatos("trips.txt");
-      if (datosViajes.length === 0) return;
-      const datosTiempoParadas = await cargarDatos(
-        "stop_times.txt",
-        "trip_id",
-        datosViajes[0].trip_id
+      const [datosParadas, datosTiempoParadas, datosViajes] = await Promise.all(
+        [
+          cargarDatos("stops.txt"),
+          cargarDatos("stop_times.txt"),
+          cargarDatos("trips.txt"),
+        ]
       );
-      const datosParadas = await cargarDatos("stops.txt");
       /**
        * Promise.all reduce el tiempo total de carga, permitiendo ejecutar las tres promesas en paralelo.
        */
